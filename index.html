@@ -6,13 +6,14 @@
 <title>Prayer Time</title>
 
 <style>
+
 body{
  margin:0;
- font-family:Arial;
- background:#0b1120;
+ font-family:'Segoe UI',sans-serif;
+ background:#0f172a;
  color:white;
- padding-bottom:70px;
- transition:0.3s;
+ padding-bottom:80px;
+ transition:.3s;
 }
 
 .light{
@@ -20,23 +21,37 @@ body{
  color:black;
 }
 
+/* Header */
 header{
- background:linear-gradient(120deg,#16a34a,#065f46);
- padding:15px;
+ background:linear-gradient(120deg,#22c55e,#15803d);
+ padding:18px;
  text-align:center;
+ border-bottom-left-radius:20px;
+ border-bottom-right-radius:20px;
+ box-shadow:0 4px 12px rgba(0,0,0,0.3);
 }
 
+/* Card */
 .card{
  background:#1e293b;
- margin:12px;
- padding:15px;
- border-radius:12px;
+ margin:15px;
+ padding:18px;
+ border-radius:16px;
+ box-shadow:0 4px 12px rgba(0,0,0,0.3);
 }
 
 .light .card{
  background:white;
 }
 
+/* Time Text */
+.big{
+ font-size:28px;
+ font-weight:bold;
+ margin-top:8px;
+}
+
+/* Bottom Nav */
 .bottom-nav{
  position:fixed;
  bottom:0;
@@ -44,29 +59,39 @@ header{
  background:#1e293b;
  display:flex;
  justify-content:space-around;
- padding:10px;
+ padding:12px;
+ border-top-left-radius:20px;
+ border-top-right-radius:20px;
 }
 
 .light .bottom-nav{
  background:white;
 }
 
+.bottom-nav button{
+ background:none;
+ color:#22c55e;
+ font-weight:bold;
+}
+
 button{
  padding:10px;
  border:none;
- border-radius:8px;
- margin:3px;
+ border-radius:10px;
+ margin:5px;
 }
 
 .hidden{display:none}
+
 </style>
 </head>
 
 <body>
 
 <header>
-<h2 id="title">🕌 Prayer Time</h2>
-<p id="hijri"></p>
+<h2>🕌 Prayer Time</h2>
+<p id="fullDate"></p>
+<p id="localTime"></p>
 </header>
 
 <!-- Home -->
@@ -74,11 +99,11 @@ button{
 
 <div class="card">
 <h3 id="nextPrayer">Next Prayer</h3>
-<p id="countdown"></p>
+<p class="big" id="countdown"></p>
 </div>
 
 <div class="card">
-<h3 id="todayTitle">আজকের নামাজ সময়</h3>
+<h3>Prayer Times</h3>
 <p id="fajr"></p>
 <p id="dhuhr"></p>
 <p id="asr"></p>
@@ -87,7 +112,7 @@ button{
 </div>
 
 <div class="card">
-<h3 id="ramadanTitle">সেহরি ও ইফতার</h3>
+<h3>🌙 Ramadan</h3>
 <p id="sehri"></p>
 <p id="iftar"></p>
 </div>
@@ -106,13 +131,6 @@ button{
 <div class="card">
 <h3>Mode</h3>
 <button onclick="toggleMode()">Dark / Light</button>
-</div>
-
-<div class="card">
-<h3>Developer</h3>
-<p>Shovon</p>
-<p>01843860547</p>
-<p>srp-soft.ltd</p>
 </div>
 
 </div>
@@ -136,7 +154,7 @@ if(p==="home") homePage.classList.remove("hidden");
 if(p==="settings") settingsPage.classList.remove("hidden");
 }
 
-/* AM PM Format */
+/* 12 Hour Format */
 function formatTime(time24){
  let [h,m]=time24.split(":");
  let ampm = h >= 12 ? "PM" : "AM";
@@ -144,27 +162,45 @@ function formatTime(time24){
  return h + ":" + m + " " + ampm;
 }
 
-/* Language Change */
+/* Language */
 function setLang(lang){
 
 localStorage.setItem("lang",lang);
 
-if(lang==="en"){
-todayTitle.innerText="Today's Prayer Time";
-ramadanTitle.innerText="Sehri & Iftar";
-nextPrayer.innerText="Next Prayer";
-}
-else{
-todayTitle.innerText="আজকের নামাজ সময়";
-ramadanTitle.innerText="সেহরি ও ইফতার";
+if(lang==="bn"){
 nextPrayer.innerText="পরবর্তী নামাজ";
 }
+else{
+nextPrayer.innerText="Next Prayer";
+}
 
 }
 
-/* Dark Light */
+/* Mode */
 function toggleMode(){
 document.body.classList.toggle("light");
+}
+
+/* Local Time */
+function showLocalTime(){
+setInterval(()=>{
+let now=new Date();
+
+localTime.innerText="Local Time: "+ now.toLocaleTimeString();
+
+},1000);
+}
+
+/* Full Date */
+function showFullDate(hijri,enDate){
+
+let bnYear = new Date().getFullYear().toLocaleString("bn-BD");
+
+fullDate.innerText=
+"Hijri: "+hijri+
+" | English: "+enDate+
+" | বাংলা সাল: "+bnYear;
+
 }
 
 /* Prayer API */
@@ -184,9 +220,13 @@ isha.innerText="Isha: "+formatTime(t.Isha);
 sehri.innerText="Sehri End: "+formatTime(t.Fajr);
 iftar.innerText="Iftar: "+formatTime(t.Maghrib);
 
-hijri.innerText="Hijri: "+data.data.date.hijri.date;
+showFullDate(
+data.data.date.hijri.date,
+data.data.date.gregorian.date
+);
 
 nextPrayerCountdown(t);
+
 }
 
 /* Countdown */
@@ -235,14 +275,13 @@ break;
 }
 
 loadPrayer();
+showLocalTime();
 
-/* Load saved language */
+/* Load Language */
 let savedLang=localStorage.getItem("lang");
 if(savedLang) setLang(savedLang);
 
 </script>
 
 </body>
-</html>
-
 </html>
