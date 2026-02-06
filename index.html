@@ -21,17 +21,14 @@ body{
  color:black;
 }
 
-/* Header */
 header{
  background:linear-gradient(120deg,#22c55e,#15803d);
  padding:18px;
  text-align:center;
  border-bottom-left-radius:20px;
  border-bottom-right-radius:20px;
- box-shadow:0 4px 12px rgba(0,0,0,0.3);
 }
 
-/* Card */
 .card{
  background:#1e293b;
  margin:15px;
@@ -44,14 +41,11 @@ header{
  background:white;
 }
 
-/* Time Text */
 .big{
- font-size:28px;
+ font-size:26px;
  font-weight:bold;
- margin-top:8px;
 }
 
-/* Bottom Nav */
 .bottom-nav{
  position:fixed;
  bottom:0;
@@ -60,18 +54,10 @@ header{
  display:flex;
  justify-content:space-around;
  padding:12px;
- border-top-left-radius:20px;
- border-top-right-radius:20px;
 }
 
 .light .bottom-nav{
  background:white;
-}
-
-.bottom-nav button{
- background:none;
- color:#22c55e;
- font-weight:bold;
 }
 
 button{
@@ -133,6 +119,13 @@ button{
 <button onclick="toggleMode()">Dark / Light</button>
 </div>
 
+<div class="card">
+<h3>Developer</h3>
+<p>Shovon</p>
+<p>01843860547</p>
+<p>srp-soft.ltd</p>
+</div>
+
 </div>
 
 <!-- Bottom Nav -->
@@ -154,7 +147,7 @@ if(p==="home") homePage.classList.remove("hidden");
 if(p==="settings") settingsPage.classList.remove("hidden");
 }
 
-/* 12 Hour Format */
+/* Time Format */
 function formatTime(time24){
  let [h,m]=time24.split(":");
  let ampm = h >= 12 ? "PM" : "AM";
@@ -162,9 +155,18 @@ function formatTime(time24){
  return h + ":" + m + " " + ampm;
 }
 
+/* Bangla Date */
+function getBanglaDate(){
+ let date = new Date();
+ return date.toLocaleDateString("bn-BD",{
+ year:"numeric",
+ month:"long",
+ day:"numeric"
+ });
+}
+
 /* Language */
 function setLang(lang){
-
 localStorage.setItem("lang",lang);
 
 if(lang==="bn"){
@@ -173,7 +175,6 @@ nextPrayer.innerText="পরবর্তী নামাজ";
 else{
 nextPrayer.innerText="Next Prayer";
 }
-
 }
 
 /* Mode */
@@ -185,25 +186,21 @@ document.body.classList.toggle("light");
 function showLocalTime(){
 setInterval(()=>{
 let now=new Date();
-
 localTime.innerText="Local Time: "+ now.toLocaleTimeString();
-
 },1000);
 }
 
 /* Full Date */
 function showFullDate(hijri,enDate){
+let banglaDate=getBanglaDate();
 
-let bnYear = new Date().getFullYear().toLocaleString("bn-BD");
-
-fullDate.innerText=
+fullDate.innerText =
 "Hijri: "+hijri+
 " | English: "+enDate+
-" | বাংলা সাল: "+bnYear;
-
+" | বাংলা: "+banglaDate;
 }
 
-/* Prayer API */
+/* Load Prayer */
 async function loadPrayer(){
 
 let res=await fetch("https://api.aladhan.com/v1/timingsByCity?city=Dhaka&country=Bangladesh&method=1");
@@ -226,7 +223,6 @@ data.data.date.gregorian.date
 );
 
 nextPrayerCountdown(t);
-
 }
 
 /* Countdown */
