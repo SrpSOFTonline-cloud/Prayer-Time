@@ -69,7 +69,7 @@ button{
 <p id="hijri"></p>
 </header>
 
-<!-- Home -->
+<!-- HOME -->
 <div id="homePage">
 
 <div class="card">
@@ -94,7 +94,13 @@ button{
 
 </div>
 
-<!-- Settings -->
+<!-- RAMADAN PAGE -->
+<div id="ramadanPage" class="hidden">
+<h3 style="padding:10px">📅 Ramadan Calendar 2026</h3>
+<div id="ramadanCalendar"></div>
+</div>
+
+<!-- SETTINGS -->
 <div id="settingsPage" class="hidden">
 
 <div class="card">
@@ -117,9 +123,10 @@ button{
 
 </div>
 
-<!-- Bottom Nav -->
+<!-- NAV -->
 <div class="bottom-nav">
 <button onclick="showPage('home')">Home</button>
+<button onclick="showPage('ramadan')">Ramadan</button>
 <button onclick="showPage('settings')">Settings</button>
 </div>
 
@@ -127,16 +134,18 @@ button{
 
 <script>
 
-/* Page Switch */
+/* PAGE SWITCH */
 function showPage(p){
 homePage.classList.add("hidden");
 settingsPage.classList.add("hidden");
+ramadanPage.classList.add("hidden");
 
 if(p==="home") homePage.classList.remove("hidden");
 if(p==="settings") settingsPage.classList.remove("hidden");
+if(p==="ramadan") ramadanPage.classList.remove("hidden");
 }
 
-/* AM PM Format */
+/* AM PM */
 function formatTime(time24){
  let [h,m]=time24.split(":");
  let ampm = h >= 12 ? "PM" : "AM";
@@ -144,7 +153,7 @@ function formatTime(time24){
  return h + ":" + m + " " + ampm;
 }
 
-/* Language Change */
+/* LANGUAGE */
 function setLang(lang){
 
 localStorage.setItem("lang",lang);
@@ -159,21 +168,40 @@ todayTitle.innerText="আজকের নামাজ সময়";
 ramadanTitle.innerText="সেহরি ও ইফতার";
 nextPrayer.innerText="পরবর্তী নামাজ";
 }
-
 }
 
-/* Dark Light */
+/* MODE */
 function toggleMode(){
 document.body.classList.toggle("light");
 }
 
-/* Prayer API */
-async function loadPrayer(){
+/* NOTIFICATION */
+Notification.requestPermission();
 
-let res=await fetch("https://api.aladhan.com/v1/timingsByCity?city=Dhaka&country=Bangladesh&method=1");
+function sendNotification(name){
+if(Notification.permission==="granted"){
+new Notification("Prayer Time",{body:name+" time"});
+}
+}
+
+/* GPS LOCATION */
+function getLocation(){
+
+navigator.geolocation.getCurrentPosition(async pos=>{
+
+let lat=pos.coords.latitude;
+let lon=pos.coords.longitude;
+
+let res=await fetch(`https://api.aladhan.com/v1/timings?latitude=${lat}&longitude=${lon}&method=1`);
 let data=await res.json();
 
-let t=data.data.timings;
+updatePrayer(data.data.timings,data.data.date.hijri.date);
+
+});
+}
+
+/* UPDATE PRAYER */
+function updatePrayer(t,hijriDate){
 
 fajr.innerText="Fajr: "+formatTime(t.Fajr);
 dhuhr.innerText="Dhuhr: "+formatTime(t.Dhuhr);
@@ -184,15 +212,15 @@ isha.innerText="Isha: "+formatTime(t.Isha);
 sehri.innerText="Sehri End: "+formatTime(t.Fajr);
 iftar.innerText="Iftar: "+formatTime(t.Maghrib);
 
-hijri.innerText="Hijri: "+data.data.date.hijri.date;
+hijri.innerText="Hijri: "+hijriDate;
 
 nextPrayerCountdown(t);
 }
 
-/* Countdown */
+/* COUNTDOWN */
 function nextPrayerCountdown(t){
 
-let prayerList=[
+let list=[
 {n:"Fajr",t:t.Fajr},
 {n:"Dhuhr",t:t.Dhuhr},
 {n:"Asr",t:t.Asr},
@@ -204,7 +232,7 @@ setInterval(()=>{
 
 let now=new Date();
 
-for(let p of prayerList){
+for(let p of list){
 
 let time=p.t.split(":");
 let pt=new Date();
@@ -222,6 +250,7 @@ countdown.innerText=h+"h "+m+"m "+s+"s";
 nextPrayer.innerText="Next Prayer: "+p.n;
 
 if(diff<60000){
+sendNotification(p.n);
 adhan.play();
 }
 
@@ -231,12 +260,33 @@ break;
 }
 
 },1000);
-
 }
 
-loadPrayer();
+/* RAMADAN CALENDAR */
+async function loadRamadan(){
 
-/* Load saved language */
+let res=await fetch("https://api.aladhan.com/v1/calendarByCity?city=Dhaka&country=Bangladesh&method=1&month=3&year=2026");
+let data=await res.json();
+
+let html="";
+
+data.data.forEach(day=>{
+html+=`
+<div class="card">
+Day ${day.date.gregorian.day}
+<br> Sehri: ${formatTime(day.timings.Fajr)}
+<br> Iftar: ${formatTime(day.timings.Maghrib)}
+</div>`;
+});
+
+ramadanCalendar.innerHTML=html;
+}
+
+/* INIT */
+getLocation();
+loadRamadan();
+
+/* LOAD SAVED LANGUAGE */
 let savedLang=localStorage.getItem("lang");
 if(savedLang) setLang(savedLang);
 
