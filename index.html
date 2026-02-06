@@ -3,73 +3,112 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Prayer Time</title>
+<title>Prayer Time Pro</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
 
 <style>
 :root{
   --bg:#0f172a;
   --card:#1e293b;
+  --accent:#22c55e;
   --text:white;
 }
 
 .light{
-  --bg:#f1f5f9;
+  --bg:#f8fafc;
   --card:white;
   --text:black;
 }
 
+*{
+  box-sizing:border-box;
+  font-family:'Poppins',sans-serif;
+}
+
 body{
   margin:0;
-  font-family: Arial, sans-serif;
   background:var(--bg);
   color:var(--text);
 }
 
 header{
-  background:var(--card);
-  padding:15px;
+  background:linear-gradient(120deg,#22c55e,#15803d);
+  padding:25px 15px;
   text-align:center;
+  border-radius:0 0 25px 25px;
+}
+
+header h1{
+  margin:0;
+  font-weight:600;
 }
 
 .container{
-  max-width:700px;
+  max-width:800px;
   margin:auto;
   padding:15px;
 }
 
 .card{
   background:var(--card);
-  padding:18px;
-  border-radius:12px;
-  margin-top:15px;
+  border-radius:18px;
+  padding:20px;
+  margin-top:18px;
+  box-shadow:0 8px 20px rgba(0,0,0,0.2);
 }
 
-button,input{
-  padding:10px;
+input,button{
+  width:100%;
+  margin-top:8px;
+  padding:12px;
+  border-radius:10px;
   border:none;
-  border-radius:8px;
-  font-size:16px;
+  font-size:15px;
 }
 
 button{
-  background:#38bdf8;
+  background:var(--accent);
+  color:white;
+  font-weight:600;
   cursor:pointer;
 }
 
-table{
-  width:100%;
-  border-collapse:collapse;
+.prayer-box{
+  display:flex;
+  justify-content:space-between;
+  padding:14px;
+  border-bottom:1px solid rgba(255,255,255,0.1);
 }
 
-th,td{
-  padding:10px;
-  border-bottom:1px solid gray;
+.prayer-box:last-child{
+  border:none;
+}
+
+.next{
+  background:rgba(34,197,94,0.2);
+  border-radius:10px;
+}
+
+.countdown{
+  text-align:center;
+  font-size:22px;
+  font-weight:600;
+  margin-top:10px;
+}
+
+.calendar-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:10px;
+  font-size:14px;
 }
 
 footer{
   text-align:center;
-  padding:15px;
-  margin-top:30px;
+  padding:20px;
+  opacity:0.7;
+  font-size:14px;
 }
 </style>
 </head>
@@ -77,149 +116,133 @@ footer{
 <body>
 
 <header>
-<h1>🕌 Prayer Time</h1>
-<p id="locationText">Loading Location...</p>
-<button onclick="toggleTheme()">🌙 Toggle Mode</button>
+<h1>🕌 Prayer Time Pro</h1>
+<p id="locationText">Loading...</p>
+<button onclick="toggleTheme()">Toggle Theme</button>
 </header>
 
 <div class="container">
 
 <div class="card">
 <h3>Change Location</h3>
-<input id="cityInput" placeholder="Enter city" />
+<input id="cityInput" placeholder="Enter City" />
 <button onclick="loadPrayerTimes()">Search</button>
-<button onclick="getGPS()">📍 Auto GPS</button>
+<button onclick="getGPS()">Auto GPS</button>
 </div>
 
 <div class="card">
-<h2>Today's Prayer Times</h2>
-<table id="prayerTable"></table>
+<h3>Today's Prayer</h3>
+<div id="prayerList"></div>
 </div>
 
 <div class="card">
-<h3>Next Prayer Countdown</h3>
-<p id="countdown"></p>
+<h3>Next Prayer</h3>
+<div class="countdown" id="countdown"></div>
 </div>
 
 <div class="card">
-<h3>📅 Monthly Calendar</h3>
-<div id="monthly"></div>
+<h3>Monthly Preview</h3>
+<div id="monthly" class="calendar-grid"></div>
 </div>
 
 </div>
 
 <footer>
-<p>Developer: Shovon</p>
-<p>Mobile: 01843860547</p>
+Developer: Shovon | 01843860547
 </footer>
 
 <audio id="adhanAudio" src="https://cdn.islamic.network/audio/adhan/adhan.mp3"></audio>
 
 <script>
-let prayerTimes = {};
+let prayerTimes={};
 
 function toggleTheme(){
-  document.body.classList.toggle("light");
+ document.body.classList.toggle("light");
 }
 
 async function loadPrayerTimes(){
-  let city = document.getElementById("cityInput").value || "Dhaka";
-  document.getElementById("locationText").innerText = city + ", Bangladesh";
+ let city=document.getElementById("cityInput").value||"Dhaka";
+ document.getElementById("locationText").innerText=city+", Bangladesh";
 
-  let res = await fetch(`https://api.aladhan.com/v1/timingsByCity?city=${city}&country=Bangladesh&method=1`);
-  let data = await res.json();
+ let res=await fetch(`https://api.aladhan.com/v1/timingsByCity?city=${city}&country=Bangladesh&method=1`);
+ let data=await res.json();
+ prayerTimes=data.data.timings;
 
-  prayerTimes = data.data.timings;
-  displayTable();
-  loadMonthly(city);
-  requestNotification();
+ renderPrayer();
+ loadMonthly(city);
 }
 
-function displayTable(){
-  let table = document.getElementById("prayerTable");
-  let prayers = ["Fajr","Dhuhr","Asr","Maghrib","Isha"];
+function renderPrayer(){
+ let prayers=["Fajr","Dhuhr","Asr","Maghrib","Isha"];
+ let html="";
+ let next=getNextPrayer();
 
-  table.innerHTML = `<tr><th>Prayer</th><th>Time</th></tr>`;
+ prayers.forEach(p=>{
+ html+=`<div class="prayer-box ${next?.name===p?'next':''}">
+ <span>${p}</span>
+ <span>${prayerTimes[p]}</span>
+ </div>`;
+ });
 
-  prayers.forEach(p => {
-    table.innerHTML += `<tr><td>${p}</td><td>${prayerTimes[p]}</td></tr>`;
-  });
+ document.getElementById("prayerList").innerHTML=html;
 }
 
 function getNextPrayer(){
-  let now = new Date();
-  let prayers = ["Fajr","Dhuhr","Asr","Maghrib","Isha"];
+ let now=new Date();
+ let prayers=["Fajr","Dhuhr","Asr","Maghrib","Isha"];
 
-  for(let p of prayers){
-    let [h,m] = prayerTimes[p].split(":");
-    let time = new Date();
-    time.setHours(h,m,0);
+ for(let p of prayers){
+ let [h,m]=prayerTimes[p].split(":");
+ let time=new Date();
+ time.setHours(h,m,0);
 
-    if(time > now) return {name:p,time};
-  }
+ if(time>now) return {name:p,time};
+ }
 }
 
 function updateCountdown(){
-  let next = getNextPrayer();
-  if(!next) return;
+ let next=getNextPrayer();
+ if(!next) return;
 
-  let diff = next.time - new Date();
-  let h = Math.floor(diff/3600000);
-  let m = Math.floor(diff/60000)%60;
-  let s = Math.floor(diff/1000)%60;
+ let diff=next.time-new Date();
 
-  document.getElementById("countdown").innerText =
-  `Next Prayer ${next.name} in ${h}h ${m}m ${s}s`;
+ let h=Math.floor(diff/3600000);
+ let m=Math.floor(diff/60000)%60;
+ let s=Math.floor(diff/1000)%60;
 
-  if(diff < 1000){
-    document.getElementById("adhanAudio").play();
-    sendNotification(next.name);
-  }
+ document.getElementById("countdown").innerText=
+ `${next.name} in ${h}h ${m}m ${s}s`;
+
+ if(diff<1000){
+ document.getElementById("adhanAudio").play();
+ }
 }
 
 setInterval(updateCountdown,1000);
 
 async function loadMonthly(city){
-  let res = await fetch(`https://api.aladhan.com/v1/calendarByCity?city=${city}&country=Bangladesh&method=1`);
-  let data = await res.json();
+ let res=await fetch(`https://api.aladhan.com/v1/calendarByCity?city=${city}&country=Bangladesh&method=1`);
+ let data=await res.json();
 
-  let html = `<table><tr><th>Date</th><th>Fajr</th><th>Maghrib</th></tr>`;
+ let html="";
+ data.data.slice(0,12).forEach(d=>{
+ html+=`<div>${d.date.gregorian.date}<br>🌅 ${d.timings.Fajr}<br>🌇 ${d.timings.Maghrib}</div>`;
+ });
 
-  data.data.slice(0,10).forEach(day => {
-    html += `<tr>
-      <td>${day.date.gregorian.date}</td>
-      <td>${day.timings.Fajr}</td>
-      <td>${day.timings.Maghrib}</td>
-    </tr>`;
-  });
-
-  html += `</table>`;
-  document.getElementById("monthly").innerHTML = html;
+ document.getElementById("monthly").innerHTML=html;
 }
 
 function getGPS(){
-  navigator.geolocation.getCurrentPosition(async pos => {
-    let lat = pos.coords.latitude;
-    let lon = pos.coords.longitude;
+ navigator.geolocation.getCurrentPosition(async pos=>{
+ let lat=pos.coords.latitude;
+ let lon=pos.coords.longitude;
 
-    let res = await fetch(`https://api.aladhan.com/v1/timings?latitude=${lat}&longitude=${lon}&method=1`);
-    let data = await res.json();
+ let res=await fetch(`https://api.aladhan.com/v1/timings?latitude=${lat}&longitude=${lon}&method=1`);
+ let data=await res.json();
+ prayerTimes=data.data.timings;
 
-    prayerTimes = data.data.timings;
-    displayTable();
-  });
-}
-
-function requestNotification(){
-  if(Notification.permission !== "granted"){
-    Notification.requestPermission();
-  }
-}
-
-function sendNotification(prayer){
-  if(Notification.permission === "granted"){
-    new Notification(`Time for ${prayer} prayer`);
-  }
+ renderPrayer();
+ });
 }
 
 loadPrayerTimes();
