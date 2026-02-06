@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>Prayer Time</title>
 
 <style>
@@ -66,20 +65,19 @@ button{
 
 .hidden{display:none}
 </style>
-
 </head>
 
 <body>
 
 <!-- Splash -->
 <div id="splash">
-<img src="logo.png" class="logo">
+<img src="./logo.png" class="logo">
 <h2>Prayer Time</h2>
 <p>srp-soft.ltd</p>
 </div>
 
 <header>
-<h2 id="title">🕌 Prayer Time</h2>
+<h2>🕌 Prayer Time</h2>
 <p id="hijri"></p>
 </header>
 
@@ -110,20 +108,12 @@ button{
 
 <!-- Settings -->
 <div id="settingsPage" class="hidden">
-
-<div class="card">
-<h3>Language</h3>
-<button onclick="setLang('bn')">বাংলা</button>
-<button onclick="setLang('en')">English</button>
-</div>
-
 <div class="card">
 <h3>Developer</h3>
 <p>Shovon</p>
 <p>01843860547</p>
 <p>srp-soft.ltd</p>
 </div>
-
 </div>
 
 <!-- Bottom Nav -->
@@ -137,7 +127,7 @@ button{
 
 <script>
 
-/* Splash Hide */
+/* Splash */
 setTimeout(()=>{
 document.getElementById("splash").style.display="none";
 },2500);
@@ -151,10 +141,12 @@ if(p=="home") homePage.classList.remove("hidden");
 if(p=="settings") settingsPage.classList.remove("hidden");
 }
 
-/* Language */
-function setLang(lang){
-localStorage.setItem("lang",lang);
-alert("Language Changed");
+/* 24h → AM PM */
+function formatTime(time24){
+ let [h,m]=time24.split(":");
+ let ampm = h >= 12 ? "PM" : "AM";
+ h = h % 12 || 12;
+ return h + ":" + m + " " + ampm;
 }
 
 /* Prayer API */
@@ -165,14 +157,14 @@ let data=await res.json();
 
 let t=data.data.timings;
 
-fajr.innerText="ফজর: "+t.Fajr;
-dhuhr.innerText="যোহর: "+t.Dhuhr;
-asr.innerText="আসর: "+t.Asr;
-maghrib.innerText="মাগরিব: "+t.Maghrib;
-isha.innerText="এশা: "+t.Isha;
+fajr.innerText="ফজর: "+formatTime(t.Fajr);
+dhuhr.innerText="যোহর: "+formatTime(t.Dhuhr);
+asr.innerText="আসর: "+formatTime(t.Asr);
+maghrib.innerText="মাগরিব: "+formatTime(t.Maghrib);
+isha.innerText="এশা: "+formatTime(t.Isha);
 
-sehri.innerText="সেহরি শেষ: "+t.Fajr;
-iftar.innerText="ইফতার: "+t.Maghrib;
+sehri.innerText="সেহরি শেষ: "+formatTime(t.Fajr);
+iftar.innerText="ইফতার: "+formatTime(t.Maghrib);
 
 hijri.innerText="হিজরি: "+data.data.date.hijri.date;
 
@@ -183,11 +175,11 @@ nextPrayerCountdown(t);
 function nextPrayerCountdown(t){
 
 let prayerList=[
-{n:"Fajr",t:t.Fajr},
-{n:"Dhuhr",t:t.Dhuhr},
-{n:"Asr",t:t.Asr},
-{n:"Maghrib",t:t.Maghrib},
-{n:"Isha",t:t.Isha}
+{n:"ফজর",t:t.Fajr},
+{n:"যোহর",t:t.Dhuhr},
+{n:"আসর",t:t.Asr},
+{n:"মাগরিব",t:t.Maghrib},
+{n:"এশা",t:t.Isha}
 ];
 
 setInterval(()=>{
@@ -208,8 +200,8 @@ let h=Math.floor(diff/3600000);
 let m=Math.floor(diff/60000)%60;
 let s=Math.floor(diff/1000)%60;
 
-countdown.innerText=p.n+" in "+h+"h "+m+"m "+s+"s";
-nextPrayer.innerText="Next Prayer: "+p.n;
+countdown.innerText="বাকি: "+h+"ঘ "+m+"মি "+s+"সে";
+nextPrayer.innerText="পরবর্তী নামাজ: "+p.n;
 
 if(diff<60000){
 document.getElementById("adhan").play();
@@ -224,15 +216,9 @@ break;
 
 }
 
-/* Offline Save */
-function saveOffline(data){
-localStorage.setItem("prayer",JSON.stringify(data));
-}
-
 loadPrayer();
 
 </script>
 
 </body>
 </html>
-
