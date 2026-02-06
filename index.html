@@ -1,74 +1,294 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Prayer Time</title>
 
 <style>
 body{
-font-family: Arial;
-text-align:center;
-background:#f5f5f5;
-padding:20px;
+ margin:0;
+ font-family:Arial;
+ background:#0b1120;
+ color:white;
+ padding-bottom:70px;
+ transition:0.3s;
+}
+
+.light{
+ background:#f1f5f9;
+ color:black;
+}
+
+header{
+ background:linear-gradient(120deg,#16a34a,#065f46);
+ padding:15px;
+ text-align:center;
 }
 
 .card{
-background:white;
-padding:15px;
-margin:10px;
-border-radius:10px;
-box-shadow:0 0 5px gray;
+ background:#1e293b;
+ margin:12px;
+ padding:15px;
+ border-radius:12px;
 }
-</style>
 
+.light .card{
+ background:white;
+}
+
+.bottom-nav{
+ position:fixed;
+ bottom:0;
+ width:100%;
+ background:#1e293b;
+ display:flex;
+ justify-content:space-around;
+ padding:10px;
+}
+
+.light .bottom-nav{
+ background:white;
+}
+
+button{
+ padding:10px;
+ border:none;
+ border-radius:8px;
+ margin:3px;
+}
+
+.hidden{display:none}
+</style>
 </head>
 
 <body>
 
-<h2>🕌 Prayer Time</h2>
+<header>
+<h2 id="title">🕌 Prayer Time</h2>
+<p id="hijri"></p>
+</header>
 
-<div class="card" id="fajr">Loading...</div>
-<div class="card" id="dhuhr"></div>
-<div class="card" id="asr"></div>
-<div class="card" id="maghrib"></div>
-<div class="card" id="isha"></div>
+<!-- HOME -->
+<div id="homePage">
 
-<h3>🌙 Sehri & Iftar</h3>
+<div class="card">
+<h3 id="nextPrayer">Next Prayer</h3>
+<p id="countdown"></p>
+</div>
 
-<div class="card" id="sehri"></div>
-<div class="card" id="iftar"></div>
+<div class="card">
+<h3 id="todayTitle">আজকের নামাজ সময়</h3>
+<p id="fajr"></p>
+<p id="dhuhr"></p>
+<p id="asr"></p>
+<p id="maghrib"></p>
+<p id="isha"></p>
+</div>
+
+<div class="card">
+<h3 id="ramadanTitle">সেহরি ও ইফতার</h3>
+<p id="sehri"></p>
+<p id="iftar"></p>
+</div>
+
+</div>
+
+<!-- RAMADAN PAGE -->
+<div id="ramadanPage" class="hidden">
+<h3 style="padding:10px">📅 Ramadan Calendar 2026</h3>
+<div id="ramadanCalendar"></div>
+</div>
+
+<!-- SETTINGS -->
+<div id="settingsPage" class="hidden">
+
+<div class="card">
+<h3>Language</h3>
+<button onclick="setLang('bn')">বাংলা</button>
+<button onclick="setLang('en')">English</button>
+</div>
+
+<div class="card">
+<h3>Mode</h3>
+<button onclick="toggleMode()">Dark / Light</button>
+</div>
+
+<div class="card">
+<h3>Developer</h3>
+<p>Shovon</p>
+<p>01843860547</p>
+<p>srp-soft.ltd</p>
+</div>
+
+</div>
+
+<!-- NAV -->
+<div class="bottom-nav">
+<button onclick="showPage('home')">Home</button>
+<button onclick="showPage('ramadan')">Ramadan</button>
+<button onclick="showPage('settings')">Settings</button>
+</div>
+
+<audio id="adhan" src="https://cdn.islamic.network/audio/adhan/adhan.mp3"></audio>
 
 <script>
 
-function formatTime(t){
-let [h,m]=t.split(":");
-let ampm=h>=12?"PM":"AM";
-h=h%12||12;
-return h+":"+m+" "+ampm;
+/* PAGE SWITCH */
+function showPage(p){
+homePage.classList.add("hidden");
+settingsPage.classList.add("hidden");
+ramadanPage.classList.add("hidden");
+
+if(p==="home") homePage.classList.remove("hidden");
+if(p==="settings") settingsPage.classList.remove("hidden");
+if(p==="ramadan") ramadanPage.classList.remove("hidden");
 }
 
-function updateUI(t){
+/* AM PM */
+function formatTime(time24){
+ let [h,m]=time24.split(":");
+ let ampm = h >= 12 ? "PM" : "AM";
+ h = h % 12 || 12;
+ return h + ":" + m + " " + ampm;
+}
 
-document.getElementById("fajr").innerHTML="Fajr : "+formatTime(t.Fajr);
-document.getElementById("dhuhr").innerHTML="Dhuhr : "+formatTime(t.Dhuhr);
-document.getElementById("asr").innerHTML="Asr : "+formatTime(t.Asr);
-document.getElementById("maghrib").innerHTML="Maghrib : "+formatTime(t.Maghrib);
-document.getElementById("isha").innerHTML="Isha : "+formatTime(t.Isha);
+/* LANGUAGE */
+function setLang(lang){
 
-document.getElementById("sehri").innerHTML="Sehri End : "+formatTime(t.Fajr);
-document.getElementById("iftar").innerHTML="Iftar : "+formatTime(t.Maghrib);
+localStorage.setItem("lang",lang);
+
+if(lang==="en"){
+todayTitle.innerText="Today's Prayer Time";
+ramadanTitle.innerText="Sehri & Iftar";
+nextPrayer.innerText="Next Prayer";
+}
+else{
+todayTitle.innerText="আজকের নামাজ সময়";
+ramadanTitle.innerText="সেহরি ও ইফতার";
+nextPrayer.innerText="পরবর্তী নামাজ";
+}
+}
+
+/* MODE */
+function toggleMode(){
+document.body.classList.toggle("light");
+}
+
+/* NOTIFICATION */
+Notification.requestPermission();
+
+function sendNotification(name){
+if(Notification.permission==="granted"){
+new Notification("Prayer Time",{body:name+" time"});
+}
+}
+
+/* GPS LOCATION */
+function getLocation(){
+
+navigator.geolocation.getCurrentPosition(async pos=>{
+
+let lat=pos.coords.latitude;
+let lon=pos.coords.longitude;
+
+let res=await fetch(`https://api.aladhan.com/v1/timings?latitude=${lat}&longitude=${lon}&method=1`);
+let data=await res.json();
+
+updatePrayer(data.data.timings,data.data.date.hijri.date);
+
+});
+}
+
+/* UPDATE PRAYER */
+function updatePrayer(t,hijriDate){
+
+fajr.innerText="Fajr: "+formatTime(t.Fajr);
+dhuhr.innerText="Dhuhr: "+formatTime(t.Dhuhr);
+asr.innerText="Asr: "+formatTime(t.Asr);
+maghrib.innerText="Maghrib: "+formatTime(t.Maghrib);
+isha.innerText="Isha: "+formatTime(t.Isha);
+
+sehri.innerText="Sehri End: "+formatTime(t.Fajr);
+iftar.innerText="Iftar: "+formatTime(t.Maghrib);
+
+hijri.innerText="Hijri: "+hijriDate;
+
+nextPrayerCountdown(t);
+}
+
+/* COUNTDOWN */
+function nextPrayerCountdown(t){
+
+let list=[
+{n:"Fajr",t:t.Fajr},
+{n:"Dhuhr",t:t.Dhuhr},
+{n:"Asr",t:t.Asr},
+{n:"Maghrib",t:t.Maghrib},
+{n:"Isha",t:t.Isha}
+];
+
+setInterval(()=>{
+
+let now=new Date();
+
+for(let p of list){
+
+let time=p.t.split(":");
+let pt=new Date();
+pt.setHours(time[0],time[1],0);
+
+if(pt>now){
+
+let diff=pt-now;
+
+let h=Math.floor(diff/3600000);
+let m=Math.floor(diff/60000)%60;
+let s=Math.floor(diff/1000)%60;
+
+countdown.innerText=h+"h "+m+"m "+s+"s";
+nextPrayer.innerText="Next Prayer: "+p.n;
+
+if(diff<60000){
+sendNotification(p.n);
+adhan.play();
+}
+
+break;
+}
 
 }
 
-async function loadDhaka(){
-
-let res = await fetch("https://api.aladhan.com/v1/timingsByCity?city=Dhaka&country=Bangladesh&method=1");
-let data = await res.json();
-
-updateUI(data.data.timings);
+},1000);
 }
 
-loadDhaka();
+/* RAMADAN CALENDAR */
+async function loadRamadan(){
+
+let res=await fetch("https://api.aladhan.com/v1/calendarByCity?city=Dhaka&country=Bangladesh&method=1&month=3&year=2026");
+let data=await res.json();
+
+let html="";
+
+data.data.forEach(day=>{
+html+=`
+<div class="card">
+Day ${day.date.gregorian.day}
+<br> Sehri: ${formatTime(day.timings.Fajr)}
+<br> Iftar: ${formatTime(day.timings.Maghrib)}
+</div>`;
+});
+
+ramadanCalendar.innerHTML=html;
+}
+
+/* INIT */
+getLocation();
+loadRamadan();
+
+/* LOAD SAVED LANGUAGE */
+let savedLang=localStorage.getItem("lang");
+if(savedLang) setLang(savedLang);
 
 </script>
 
