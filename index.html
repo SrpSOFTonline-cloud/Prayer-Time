@@ -1,78 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Prayer Time</title>
+
+<style>
+body{
+font-family: Arial;
+text-align:center;
+background:#f5f5f5;
+padding:20px;
+}
+
+.card{
+background:white;
+padding:15px;
+margin:10px;
+border-radius:10px;
+box-shadow:0 0 5px gray;
+}
+</style>
+
+</head>
+
+<body>
+
+<h2>🕌 Prayer Time</h2>
+
+<div class="card" id="fajr">Loading...</div>
+<div class="card" id="dhuhr"></div>
+<div class="card" id="asr"></div>
+<div class="card" id="maghrib"></div>
+<div class="card" id="isha"></div>
+
+<h3>🌙 Sehri & Iftar</h3>
+
+<div class="card" id="sehri"></div>
+<div class="card" id="iftar"></div>
+
 <script>
 
-/* TIME FORMAT */
-function formatTime(time24){
- let [h,m]=time24.split(":");
- let ampm = h >= 12 ? "PM" : "AM";
- h = h % 12 || 12;
- return h + ":" + m + " " + ampm;
+function formatTime(t){
+let [h,m]=t.split(":");
+let ampm=h>=12?"PM":"AM";
+h=h%12||12;
+return h+":"+m+" "+ampm;
 }
 
-/* UPDATE UI */
-function updatePrayer(t,hijriDate){
+function updateUI(t){
 
-document.getElementById("fajr").innerText="Fajr: "+formatTime(t.Fajr);
-document.getElementById("dhuhr").innerText="Dhuhr: "+formatTime(t.Dhuhr);
-document.getElementById("asr").innerText="Asr: "+formatTime(t.Asr);
-document.getElementById("maghrib").innerText="Maghrib: "+formatTime(t.Maghrib);
-document.getElementById("isha").innerText="Isha: "+formatTime(t.Isha);
+document.getElementById("fajr").innerHTML="Fajr : "+formatTime(t.Fajr);
+document.getElementById("dhuhr").innerHTML="Dhuhr : "+formatTime(t.Dhuhr);
+document.getElementById("asr").innerHTML="Asr : "+formatTime(t.Asr);
+document.getElementById("maghrib").innerHTML="Maghrib : "+formatTime(t.Maghrib);
+document.getElementById("isha").innerHTML="Isha : "+formatTime(t.Isha);
 
-document.getElementById("sehri").innerText="Sehri End: "+formatTime(t.Fajr);
-document.getElementById("iftar").innerText="Iftar: "+formatTime(t.Maghrib);
-
-document.getElementById("hijri").innerText="Hijri: "+hijriDate;
+document.getElementById("sehri").innerHTML="Sehri End : "+formatTime(t.Fajr);
+document.getElementById("iftar").innerHTML="Iftar : "+formatTime(t.Maghrib);
 
 }
 
-/* GPS LOCATION */
-function getLocation(){
-
-if(navigator.geolocation){
-
-navigator.geolocation.getCurrentPosition(success,error);
-
-}else{
-loadDhaka();
-}
-
-}
-
-/* GPS SUCCESS */
-async function success(pos){
-
-let lat=pos.coords.latitude;
-let lon=pos.coords.longitude;
-
-try{
-
-let res=await fetch(`https://api.aladhan.com/v1/timings?latitude=${lat}&longitude=${lon}&method=1`);
-let data=await res.json();
-
-updatePrayer(data.data.timings,data.data.date.hijri.date);
-
-}catch{
-loadDhaka();
-}
-
-}
-
-/* GPS FAIL হলে Dhaka */
-function error(){
-loadDhaka();
-}
-
-/* DHAKA FALLBACK */
 async function loadDhaka(){
 
-let res=await fetch("https://api.aladhan.com/v1/timingsByCity?city=Dhaka&country=Bangladesh&method=1");
-let data=await res.json();
+let res = await fetch("https://api.aladhan.com/v1/timingsByCity?city=Dhaka&country=Bangladesh&method=1");
+let data = await res.json();
 
-updatePrayer(data.data.timings,data.data.date.hijri.date);
-
+updateUI(data.data.timings);
 }
 
-/* START */
-getLocation();
+loadDhaka();
 
 </script>
 
+</body>
+</html>
