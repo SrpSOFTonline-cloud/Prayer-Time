@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="bn">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,33 +12,20 @@ body{
  background:#0b1120;
  color:white;
  padding-bottom:70px;
+ transition:0.3s;
 }
 
-/* Splash */
-#splash{
- position:fixed;
- width:100%;
- height:100%;
- background:#0b1120;
- display:flex;
- flex-direction:column;
- justify-content:center;
- align-items:center;
- z-index:999;
+.light{
+ background:#f1f5f9;
+ color:black;
 }
 
-.logo{
- width:120px;
-}
-
-/* Header */
 header{
  background:linear-gradient(120deg,#16a34a,#065f46);
  padding:15px;
  text-align:center;
 }
 
-/* Card */
 .card{
  background:#1e293b;
  margin:12px;
@@ -46,7 +33,10 @@ header{
  border-radius:12px;
 }
 
-/* Bottom Nav */
+.light .card{
+ background:white;
+}
+
 .bottom-nav{
  position:fixed;
  bottom:0;
@@ -57,10 +47,15 @@ header{
  padding:10px;
 }
 
+.light .bottom-nav{
+ background:white;
+}
+
 button{
  padding:10px;
  border:none;
  border-radius:8px;
+ margin:3px;
 }
 
 .hidden{display:none}
@@ -69,15 +64,8 @@ button{
 
 <body>
 
-<!-- Splash -->
-<div id="splash">
-<img src="./logo.png" class="logo">
-<h2>Prayer Time</h2>
-<p>srp-soft.ltd</p>
-</div>
-
 <header>
-<h2>🕌 Prayer Time</h2>
+<h2 id="title">🕌 Prayer Time</h2>
 <p id="hijri"></p>
 </header>
 
@@ -90,7 +78,7 @@ button{
 </div>
 
 <div class="card">
-<h3>আজকের নামাজ সময়</h3>
+<h3 id="todayTitle">আজকের নামাজ সময়</h3>
 <p id="fajr"></p>
 <p id="dhuhr"></p>
 <p id="asr"></p>
@@ -99,7 +87,7 @@ button{
 </div>
 
 <div class="card">
-<h3>সেহরি ও ইফতার</h3>
+<h3 id="ramadanTitle">সেহরি ও ইফতার</h3>
 <p id="sehri"></p>
 <p id="iftar"></p>
 </div>
@@ -108,12 +96,25 @@ button{
 
 <!-- Settings -->
 <div id="settingsPage" class="hidden">
+
+<div class="card">
+<h3>Language</h3>
+<button onclick="setLang('bn')">বাংলা</button>
+<button onclick="setLang('en')">English</button>
+</div>
+
+<div class="card">
+<h3>Mode</h3>
+<button onclick="toggleMode()">Dark / Light</button>
+</div>
+
 <div class="card">
 <h3>Developer</h3>
 <p>Shovon</p>
 <p>01843860547</p>
 <p>srp-soft.ltd</p>
 </div>
+
 </div>
 
 <!-- Bottom Nav -->
@@ -122,31 +123,48 @@ button{
 <button onclick="showPage('settings')">Settings</button>
 </div>
 
-<!-- Adhan -->
 <audio id="adhan" src="https://cdn.islamic.network/audio/adhan/adhan.mp3"></audio>
 
 <script>
-
-/* Splash */
-setTimeout(()=>{
-document.getElementById("splash").style.display="none";
-},2500);
 
 /* Page Switch */
 function showPage(p){
 homePage.classList.add("hidden");
 settingsPage.classList.add("hidden");
 
-if(p=="home") homePage.classList.remove("hidden");
-if(p=="settings") settingsPage.classList.remove("hidden");
+if(p==="home") homePage.classList.remove("hidden");
+if(p==="settings") settingsPage.classList.remove("hidden");
 }
 
-/* 24h → AM PM */
+/* AM PM Format */
 function formatTime(time24){
  let [h,m]=time24.split(":");
  let ampm = h >= 12 ? "PM" : "AM";
  h = h % 12 || 12;
  return h + ":" + m + " " + ampm;
+}
+
+/* Language Change */
+function setLang(lang){
+
+localStorage.setItem("lang",lang);
+
+if(lang==="en"){
+todayTitle.innerText="Today's Prayer Time";
+ramadanTitle.innerText="Sehri & Iftar";
+nextPrayer.innerText="Next Prayer";
+}
+else{
+todayTitle.innerText="আজকের নামাজ সময়";
+ramadanTitle.innerText="সেহরি ও ইফতার";
+nextPrayer.innerText="পরবর্তী নামাজ";
+}
+
+}
+
+/* Dark Light */
+function toggleMode(){
+document.body.classList.toggle("light");
 }
 
 /* Prayer API */
@@ -157,16 +175,16 @@ let data=await res.json();
 
 let t=data.data.timings;
 
-fajr.innerText="ফজর: "+formatTime(t.Fajr);
-dhuhr.innerText="যোহর: "+formatTime(t.Dhuhr);
-asr.innerText="আসর: "+formatTime(t.Asr);
-maghrib.innerText="মাগরিব: "+formatTime(t.Maghrib);
-isha.innerText="এশা: "+formatTime(t.Isha);
+fajr.innerText="Fajr: "+formatTime(t.Fajr);
+dhuhr.innerText="Dhuhr: "+formatTime(t.Dhuhr);
+asr.innerText="Asr: "+formatTime(t.Asr);
+maghrib.innerText="Maghrib: "+formatTime(t.Maghrib);
+isha.innerText="Isha: "+formatTime(t.Isha);
 
-sehri.innerText="সেহরি শেষ: "+formatTime(t.Fajr);
-iftar.innerText="ইফতার: "+formatTime(t.Maghrib);
+sehri.innerText="Sehri End: "+formatTime(t.Fajr);
+iftar.innerText="Iftar: "+formatTime(t.Maghrib);
 
-hijri.innerText="হিজরি: "+data.data.date.hijri.date;
+hijri.innerText="Hijri: "+data.data.date.hijri.date;
 
 nextPrayerCountdown(t);
 }
@@ -175,11 +193,11 @@ nextPrayerCountdown(t);
 function nextPrayerCountdown(t){
 
 let prayerList=[
-{n:"ফজর",t:t.Fajr},
-{n:"যোহর",t:t.Dhuhr},
-{n:"আসর",t:t.Asr},
-{n:"মাগরিব",t:t.Maghrib},
-{n:"এশা",t:t.Isha}
+{n:"Fajr",t:t.Fajr},
+{n:"Dhuhr",t:t.Dhuhr},
+{n:"Asr",t:t.Asr},
+{n:"Maghrib",t:t.Maghrib},
+{n:"Isha",t:t.Isha}
 ];
 
 setInterval(()=>{
@@ -200,11 +218,11 @@ let h=Math.floor(diff/3600000);
 let m=Math.floor(diff/60000)%60;
 let s=Math.floor(diff/1000)%60;
 
-countdown.innerText="বাকি: "+h+"ঘ "+m+"মি "+s+"সে";
-nextPrayer.innerText="পরবর্তী নামাজ: "+p.n;
+countdown.innerText=h+"h "+m+"m "+s+"s";
+nextPrayer.innerText="Next Prayer: "+p.n;
 
 if(diff<60000){
-document.getElementById("adhan").play();
+adhan.play();
 }
 
 break;
@@ -217,6 +235,10 @@ break;
 }
 
 loadPrayer();
+
+/* Load saved language */
+let savedLang=localStorage.getItem("lang");
+if(savedLang) setLang(savedLang);
 
 </script>
 
