@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="bn">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>রমজান অ্যাপ</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Prayer Time</title>
 
 <style>
 body{
@@ -14,19 +15,39 @@ body{
  padding-bottom:70px;
 }
 
+/* Splash */
+#splash{
+ position:fixed;
+ width:100%;
+ height:100%;
+ background:#0b1120;
+ display:flex;
+ flex-direction:column;
+ justify-content:center;
+ align-items:center;
+ z-index:999;
+}
+
+.logo{
+ width:120px;
+}
+
+/* Header */
 header{
  background:linear-gradient(120deg,#16a34a,#065f46);
- padding:20px;
+ padding:15px;
  text-align:center;
 }
 
+/* Card */
 .card{
  background:#1e293b;
- margin:15px;
- padding:18px;
- border-radius:14px;
+ margin:12px;
+ padding:15px;
+ border-radius:12px;
 }
 
+/* Bottom Nav */
 .bottom-nav{
  position:fixed;
  bottom:0;
@@ -34,7 +55,7 @@ header{
  background:#1e293b;
  display:flex;
  justify-content:space-around;
- padding:12px;
+ padding:10px;
 }
 
 button{
@@ -44,210 +65,174 @@ button{
 }
 
 .hidden{display:none}
-
-.countdown{
- font-size:22px;
- text-align:center;
- margin-top:10px;
- color:#22c55e;
-}
 </style>
+
 </head>
 
 <body>
 
+<!-- Splash -->
+<div id="splash">
+<img src="logo.png" class="logo">
+<h2>Prayer Time</h2>
+<p>srp-soft.ltd</p>
+</div>
+
 <header>
-<h2>🌙 রমজান স্পেশাল</h2>
-<p id="hijriDate"></p>
+<h2 id="title">🕌 Prayer Time</h2>
+<p id="hijri"></p>
 </header>
 
-<!-- HOME -->
+<!-- Home -->
 <div id="homePage">
+
 <div class="card">
-<h3>আজকের রোজার দোয়া</h3>
-<p>نَوَيْتُ أَنْ أَصُوْمَ غَدًا مِنْ شَهْرِ رَمَضَانَ</p>
-<p>আমি আগামীকাল রমজানের রোজা রাখার নিয়ত করলাম</p>
+<h3 id="nextPrayer">Next Prayer</h3>
+<p id="countdown"></p>
 </div>
 
 <div class="card">
-<h3>ইফতারের দোয়া</h3>
-<p>اللهم لك صمت وعلى رزقك أفطرت</p>
-<p>হে আল্লাহ! তোমার জন্য রোজা রেখেছি এবং তোমার রিজিক দিয়ে ইফতার করছি</p>
+<h3>আজকের নামাজ সময়</h3>
+<p id="fajr"></p>
+<p id="dhuhr"></p>
+<p id="asr"></p>
+<p id="maghrib"></p>
+<p id="isha"></p>
 </div>
 
 <div class="card">
-<h3>আজকের সেহরি ও ইফতার</h3>
+<h3>সেহরি ও ইফতার</h3>
 <p id="sehri"></p>
 <p id="iftar"></p>
-<div class="countdown" id="rozaCountdown"></div>
-</div>
 </div>
 
-<!-- CALENDAR -->
-<div id="calendarPage" class="hidden">
+</div>
+
+<!-- Settings -->
+<div id="settingsPage" class="hidden">
+
 <div class="card">
-<h3>রমজান ক্যালেন্ডার</h3>
-<div id="ramadanCalendar"></div>
-</div>
+<h3>Language</h3>
+<button onclick="setLang('bn')">বাংলা</button>
+<button onclick="setLang('en')">English</button>
 </div>
 
-<!-- EVENTS -->
-<div id="eventPage" class="hidden">
 <div class="card">
-<h3>ইসলামিক ইভেন্ট</h3>
-<ul>
-<li>শবে বরাত</li>
-<li>শবে কদর</li>
-<li>ঈদুল ফিতর</li>
-<li>ঈদুল আজহা</li>
-</ul>
-</div>
+<h3>Developer</h3>
+<p>Shovon</p>
+<p>01843860547</p>
+<p>srp-soft.ltd</p>
 </div>
 
+</div>
+
+<!-- Bottom Nav -->
 <div class="bottom-nav">
-<button onclick="showPage('home')">হোম</button>
-<button onclick="showPage('calendar')">ক্যালেন্ডার</button>
-<button onclick="showPage('event')">ইভেন্ট</button>
+<button onclick="showPage('home')">Home</button>
+<button onclick="showPage('settings')">Settings</button>
 </div>
+
+<!-- Adhan -->
+<audio id="adhan" src="https://cdn.islamic.network/audio/adhan/adhan.mp3"></audio>
 
 <script>
+
+/* Splash Hide */
+setTimeout(()=>{
+document.getElementById("splash").style.display="none";
+},2500);
+
+/* Page Switch */
 function showPage(p){
- document.getElementById('homePage').classList.add('hidden');
- document.getElementById('calendarPage').classList.add('hidden');
- document.getElementById('eventPage').classList.add('hidden');
+homePage.classList.add("hidden");
+settingsPage.classList.add("hidden");
 
- document.getElementById(p+'Page').classList.remove('hidden');
+if(p=="home") homePage.classList.remove("hidden");
+if(p=="settings") settingsPage.classList.remove("hidden");
 }
 
-async function loadRamadan(){
- let res=await fetch("https://api.aladhan.com/v1/calendarByCity?city=Dhaka&country=Bangladesh&method=1");
- let data=await res.json();
-
- let today=new Date().getDate()-1;
- let todayData=data.data[today];
-
- document.getElementById("sehri").innerText="সেহরি শেষ: "+todayData.timings.Fajr;
- document.getElementById("iftar").innerText="ইফতার শুরু: "+todayData.timings.Maghrib;
-
- document.getElementById("hijriDate").innerText="হিজরি তারিখ: "+todayData.date.hijri.date;
-
- // countdown
- let maghrib=todayData.timings.Maghrib.split(":");
- let magTime=new Date();
- magTime.setHours(maghrib[0],maghrib[1],0);
-
- setInterval(()=>{
- let diff=magTime-new Date();
- let h=Math.floor(diff/3600000);
- let m=Math.floor(diff/60000)%60;
- let s=Math.floor(diff/1000)%60;
-
- document.getElementById("rozaCountdown").innerText=
- "ইফতার বাকি: "+h+"ঘ "+m+"মিনিট "+s+"সেকেন্ড";
- },1000);
-
- // monthly calendar
- let html="";
- data.data.forEach(d=>{
- html+=`<p>${d.date.gregorian.date} - সেহরি ${d.timings.Fajr} | ইফতার ${d.timings.Maghrib}</p>`;
- });
-
- document.getElementById("ramadanCalendar").innerHTML=html;
-
- // offline save
- localStorage.setItem("ramadanData",JSON.stringify(data.data));
+/* Language */
+function setLang(lang){
+localStorage.setItem("lang",lang);
+alert("Language Changed");
 }
 
-loadRamadan();
+/* Prayer API */
+async function loadPrayer(){
+
+let res=await fetch("https://api.aladhan.com/v1/timingsByCity?city=Dhaka&country=Bangladesh&method=1");
+let data=await res.json();
+
+let t=data.data.timings;
+
+fajr.innerText="ফজর: "+t.Fajr;
+dhuhr.innerText="যোহর: "+t.Dhuhr;
+asr.innerText="আসর: "+t.Asr;
+maghrib.innerText="মাগরিব: "+t.Maghrib;
+isha.innerText="এশা: "+t.Isha;
+
+sehri.innerText="সেহরি শেষ: "+t.Fajr;
+iftar.innerText="ইফতার: "+t.Maghrib;
+
+hijri.innerText="হিজরি: "+data.data.date.hijri.date;
+
+nextPrayerCountdown(t);
+}
+
+/* Countdown */
+function nextPrayerCountdown(t){
+
+let prayerList=[
+{n:"Fajr",t:t.Fajr},
+{n:"Dhuhr",t:t.Dhuhr},
+{n:"Asr",t:t.Asr},
+{n:"Maghrib",t:t.Maghrib},
+{n:"Isha",t:t.Isha}
+];
+
+setInterval(()=>{
+
+let now=new Date();
+
+for(let p of prayerList){
+
+let time=p.t.split(":");
+let pt=new Date();
+pt.setHours(time[0],time[1],0);
+
+if(pt>now){
+
+let diff=pt-now;
+
+let h=Math.floor(diff/3600000);
+let m=Math.floor(diff/60000)%60;
+let s=Math.floor(diff/1000)%60;
+
+countdown.innerText=p.n+" in "+h+"h "+m+"m "+s+"s";
+nextPrayer.innerText="Next Prayer: "+p.n;
+
+if(diff<60000){
+document.getElementById("adhan").play();
+}
+
+break;
+}
+
+}
+
+},1000);
+
+}
+
+/* Offline Save */
+function saveOffline(data){
+localStorage.setItem("prayer",JSON.stringify(data));
+}
+
+loadPrayer();
+
 </script>
 
 </body>
 </html>
-
-// ===== New Islamic Features =====
-
-// Qibla Compass
-function QiblaCompass() {
-  return (
-    <div className="p-4">
-      <h2 className="text-xl font-bold mb-2">🧭 কিবলা কম্পাস</h2>
-      <p>ডিভাইস সেন্সর ব্যবহার করে কিবলার দিক দেখাবে (GPS + Compass API প্রয়োজন)</p>
-    </div>
-  );
-}
-
-// Quran Reader
-function QuranReader() {
-  return (
-    <div className="p-4">
-      <h2 className="text-xl font-bold mb-2">📖 কোরআন রিডার</h2>
-      <p>বাংলা ও আরবি সহ অডিও তিলাওয়াত প্লেয়ার থাকবে</p>
-    </div>
-  );
-}
-
-// Tasbih Counter
-function TasbihCounter() {
-  const [count, setCount] = React.useState(0);
-
-  return (
-    <div className="p-4 text-center">
-      <h2 className="text-xl font-bold mb-4">📿 তাসবিহ কাউন্টার</h2>
-      <div className="text-5xl font-bold mb-4">{count}</div>
-      <button
-        className="bg-green-500 text-white px-6 py-3 rounded-2xl"
-        onClick={() => setCount(count + 1)}
-      >
-        Count
-      </button>
-      <button
-        className="ml-3 bg-red-500 text-white px-6 py-3 rounded-2xl"
-        onClick={() => setCount(0)}
-      >
-        Reset
-      </button>
-    </div>
-  );
-}
-
-// Zakat Calculator
-function ZakatCalculator() {
-  const [amount, setAmount] = React.useState(0);
-
-  const zakat = (amount * 0.025).toFixed(2);
-
-  return (
-    <div className="p-4">
-      <h2 className="text-xl font-bold mb-2">💰 যাকাত ক্যালকুলেটর</h2>
-      <input
-        type="number"
-        placeholder="মোট সম্পদের পরিমাণ"
-        className="border p-2 w-full rounded mb-2"
-        onChange={(e) => setAmount(Number(e.target.value))}
-      />
-      <p>যাকাত দিতে হবে: {zakat}</p>
-    </div>
-  );
-}
-
-// Islamic Wallpapers
-function IslamicWallpapers() {
-  return (
-    <div className="p-4">
-      <h2 className="text-xl font-bold mb-2">🕌 ইসলামিক ওয়ালপেপার</h2>
-      <p>অনলাইন ও অফলাইন ওয়ালপেপার সংগ্রহ থাকবে</p>
-    </div>
-  );
-}
-
-// Offline Mode Notice
-function OfflineMode() {
-  return (
-    <div className="p-4">
-      <h2 className="text-xl font-bold">📴 সম্পূর্ণ অফলাইন মোড</h2>
-      <p>লোকাল স্টোরেজে নামাজ সময় ও ক্যালেন্ডার সংরক্ষণ করা হবে</p>
-    </div>
-  );
-}
-
 
