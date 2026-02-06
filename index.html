@@ -1,265 +1,217 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Prayer Time</title>
+
+<title>Bangladesh Prayer Time</title>
 
 <style>
 
 body{
- margin:0;
- font-family:'Segoe UI',sans-serif;
- background:#0f172a;
- color:white;
- padding-bottom:80px;
- transition:.3s;
+margin:0;
+font-family:Segoe UI;
+background:#f3f4f6;
 }
 
-.light{
- background:#f1f5f9;
- color:black;
+/* Header */
+.header{
+text-align:center;
+padding:15px;
+font-size:22px;
+font-weight:bold;
 }
 
-header{
- background:linear-gradient(120deg,#22c55e,#15803d);
- padding:18px;
- text-align:center;
- border-bottom-left-radius:20px;
- border-bottom-right-radius:20px;
+/* Remaining Card */
+.remaining{
+display:flex;
+justify-content:space-between;
+padding:20px;
 }
 
-.card{
- background:#1e293b;
- margin:15px;
- padding:18px;
- border-radius:16px;
- box-shadow:0 4px 12px rgba(0,0,0,0.3);
+.remaining-box{
+background:#6b8e00;
+color:white;
+padding:15px 25px;
+border-radius:8px;
+font-size:30px;
+font-weight:bold;
 }
 
-.light .card{
- background:white;
+.local{
+text-align:right;
+font-size:20px;
 }
 
-.big{
- font-size:26px;
- font-weight:bold;
+/* Prayer Grid */
+.prayer-row{
+display:flex;
+overflow:auto;
+padding:10px;
 }
 
-.bottom-nav{
- position:fixed;
- bottom:0;
- width:100%;
- background:#1e293b;
- display:flex;
- justify-content:space-around;
- padding:12px;
+.prayer{
+min-width:120px;
+background:#e5e7eb;
+margin:6px;
+border-radius:10px;
+padding:15px;
+text-align:center;
+border:2px solid #cbd5e1;
 }
 
-.light .bottom-nav{
- background:white;
+.active{
+background:#cde4b7;
+border:2px solid #6b8e00;
+font-weight:bold;
 }
 
-button{
- padding:10px;
- border:none;
- border-radius:10px;
- margin:5px;
+.prayer h4{
+margin:5px 0;
 }
 
-.hidden{display:none}
+.icon{
+font-size:30px;
+margin:8px 0;
+}
 
 </style>
 </head>
 
 <body>
 
-<header>
-<h2>🕌 Prayer Time</h2>
-<p id="fullDate"></p>
-<p id="localTime"></p>
-</header>
-
-<!-- Home -->
-<div id="homePage">
-
-<div class="card">
-<h3 id="nextPrayer">Next Prayer</h3>
-<p class="big" id="countdown"></p>
+<div class="header">
+Bangladesh Prayer times
 </div>
 
-<div class="card">
-<h3>Prayer Times</h3>
-<p id="fajr"></p>
-<p id="dhuhr"></p>
-<p id="asr"></p>
-<p id="maghrib"></p>
-<p id="isha"></p>
+<div class="remaining">
+
+<div>
+<div id="remaining" class="remaining-box">
+--:--:--
+</div>
+<div id="nextName"></div>
 </div>
 
-<div class="card">
-<h3>🌙 Ramadan</h3>
-<p id="sehri"></p>
-<p id="iftar"></p>
+<div class="local">
+<span id="localTime"></span>
+<br>
+Local Time in Dhaka
 </div>
 
 </div>
 
-<!-- Settings -->
-<div id="settingsPage" class="hidden">
+<div class="prayer-row">
 
-<div class="card">
-<h3>Language</h3>
-<button onclick="setLang('bn')">বাংলা</button>
-<button onclick="setLang('en')">English</button>
+<div class="prayer" id="pFajr">
+<h4 id="fajrTime"></h4>
+<div class="icon">🌅</div>
+Fajr
 </div>
 
-<div class="card">
-<h3>Mode</h3>
-<button onclick="toggleMode()">Dark / Light</button>
+<div class="prayer" id="pSunrise">
+<h4 id="sunriseTime"></h4>
+<div class="icon">🌄</div>
+Sunrise
 </div>
 
-<div class="card">
-<h3>Developer</h3>
-<p>Shovon</p>
-<p>01843860547</p>
-<p>srp-soft.ltd</p>
+<div class="prayer" id="pDhuhr">
+<h4 id="dhuhrTime"></h4>
+<div class="icon">☀️</div>
+Dhuhr
+</div>
+
+<div class="prayer" id="pAsr">
+<h4 id="asrTime"></h4>
+<div class="icon">🌤️</div>
+Asr
+</div>
+
+<div class="prayer" id="pMaghrib">
+<h4 id="maghribTime"></h4>
+<div class="icon">🌇</div>
+Maghrib
+</div>
+
+<div class="prayer" id="pIsha">
+<h4 id="ishaTime"></h4>
+<div class="icon">🌙</div>
+Isha
 </div>
 
 </div>
-
-<!-- Bottom Nav -->
-<div class="bottom-nav">
-<button onclick="showPage('home')">Home</button>
-<button onclick="showPage('settings')">Settings</button>
-</div>
-
-<audio id="adhan" src="https://cdn.islamic.network/audio/adhan/adhan.mp3"></audio>
 
 <script>
 
-/* Page Switch */
-function showPage(p){
-homePage.classList.add("hidden");
-settingsPage.classList.add("hidden");
-
-if(p==="home") homePage.classList.remove("hidden");
-if(p==="settings") settingsPage.classList.remove("hidden");
-}
-
-/* Time Format */
-function formatTime(time24){
- let [h,m]=time24.split(":");
- let ampm = h >= 12 ? "PM" : "AM";
- h = h % 12 || 12;
- return h + ":" + m + " " + ampm;
-}
-
-/* Bangla Date */
-function getBanglaDate(){
- let date = new Date();
- return date.toLocaleDateString("bn-BD",{
- year:"numeric",
- month:"long",
- day:"numeric"
- });
-}
-
-/* Language */
-function setLang(lang){
-localStorage.setItem("lang",lang);
-
-if(lang==="bn"){
-nextPrayer.innerText="পরবর্তী নামাজ";
-}
-else{
-nextPrayer.innerText="Next Prayer";
-}
-}
-
-/* Mode */
-function toggleMode(){
-document.body.classList.toggle("light");
+/* Format Time */
+function formatTime(t){
+let [h,m]=t.split(":");
+let ampm=h>=12?"PM":"AM";
+h=h%12||12;
+return h+":"+m+" "+ampm;
 }
 
 /* Local Time */
-function showLocalTime(){
 setInterval(()=>{
-let now=new Date();
-localTime.innerText="Local Time: "+ now.toLocaleTimeString();
+localTime.innerText=new Date().toLocaleTimeString();
 },1000);
-}
-
-/* Full Date */
-function showFullDate(hijri,enDate){
-let banglaDate=getBanglaDate();
-
-fullDate.innerText =
-"Hijri: "+hijri+
-" | English: "+enDate+
-" | বাংলা: "+banglaDate;
-}
 
 /* Load Prayer */
 async function loadPrayer(){
 
 let res=await fetch("https://api.aladhan.com/v1/timingsByCity?city=Dhaka&country=Bangladesh&method=1");
 let data=await res.json();
-
 let t=data.data.timings;
 
-fajr.innerText="Fajr: "+formatTime(t.Fajr);
-dhuhr.innerText="Dhuhr: "+formatTime(t.Dhuhr);
-asr.innerText="Asr: "+formatTime(t.Asr);
-maghrib.innerText="Maghrib: "+formatTime(t.Maghrib);
-isha.innerText="Isha: "+formatTime(t.Isha);
+fajrTime.innerText=formatTime(t.Fajr);
+sunriseTime.innerText=formatTime(t.Sunrise);
+dhuhrTime.innerText=formatTime(t.Dhuhr);
+asrTime.innerText=formatTime(t.Asr);
+maghribTime.innerText=formatTime(t.Maghrib);
+ishaTime.innerText=formatTime(t.Isha);
 
-sehri.innerText="Sehri End: "+formatTime(t.Fajr);
-iftar.innerText="Iftar: "+formatTime(t.Maghrib);
-
-showFullDate(
-data.data.date.hijri.date,
-data.data.date.gregorian.date
-);
-
-nextPrayerCountdown(t);
+nextPrayer(t);
 }
 
-/* Countdown */
-function nextPrayerCountdown(t){
+/* Next Prayer */
+function nextPrayer(t){
 
-let prayerList=[
-{n:"Fajr",t:t.Fajr},
-{n:"Dhuhr",t:t.Dhuhr},
-{n:"Asr",t:t.Asr},
-{n:"Maghrib",t:t.Maghrib},
-{n:"Isha",t:t.Isha}
+let list=[
+{name:"Fajr",time:t.Fajr,id:"pFajr"},
+{name:"Sunrise",time:t.Sunrise,id:"pSunrise"},
+{name:"Dhuhr",time:t.Dhuhr,id:"pDhuhr"},
+{name:"Asr",time:t.Asr,id:"pAsr"},
+{name:"Maghrib",time:t.Maghrib,id:"pMaghrib"},
+{name:"Isha",time:t.Isha,id:"pIsha"}
 ];
 
 setInterval(()=>{
 
 let now=new Date();
 
-for(let p of prayerList){
+document.querySelectorAll(".prayer").forEach(e=>e.classList.remove("active"));
 
-let time=p.t.split(":");
+for(let p of list){
+
+let [h,m]=p.time.split(":");
 let pt=new Date();
-pt.setHours(time[0],time[1],0);
+pt.setHours(h,m,0);
 
 if(pt>now){
 
 let diff=pt-now;
 
-let h=Math.floor(diff/3600000);
-let m=Math.floor(diff/60000)%60;
-let s=Math.floor(diff/1000)%60;
+let hh=Math.floor(diff/3600000);
+let mm=Math.floor(diff/60000)%60;
+let ss=Math.floor(diff/1000)%60;
 
-countdown.innerText=h+"h "+m+"m "+s+"s";
-nextPrayer.innerText="Next Prayer: "+p.n;
+remaining.innerText=
+hh.toString().padStart(2,"0")+":"+
+mm.toString().padStart(2,"0")+":"+
+ss.toString().padStart(2,"0");
 
-if(diff<60000){
-adhan.play();
-}
+nextName.innerText=p.name+" Remaining time";
+
+document.getElementById(p.id).classList.add("active");
 
 break;
 }
@@ -271,11 +223,6 @@ break;
 }
 
 loadPrayer();
-showLocalTime();
-
-/* Load Language */
-let savedLang=localStorage.getItem("lang");
-if(savedLang) setLang(savedLang);
 
 </script>
 
