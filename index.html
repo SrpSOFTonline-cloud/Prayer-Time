@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Bangladesh Prayer App</title>
+<title>Bangladesh Prayer Time App</title>
 
 <style>
 
@@ -82,6 +82,7 @@ padding:10px;
 border:none;
 border-radius:8px;
 margin:5px;
+cursor:pointer;
 }
 
 .hidden{display:none}
@@ -133,36 +134,29 @@ margin:5px;
 
 <!-- RAMADAN -->
 <div id="ramadanPage" class="hidden">
-
 <div class="card">
 <h3>Ramadan Timetable 2026</h3>
 <p>Sehri Ends: 4:45 AM</p>
 <p>Iftar: 6:05 PM</p>
-<p>(Demo Data)</p>
 </div>
-
 </div>
 
 <!-- ZAKAT -->
 <div id="zakatPage" class="hidden">
-
 <div class="card">
 <h3>Zakat Calculator</h3>
 
-<input id="money" placeholder="Money" type="number"><br><br>
-<input id="gold" placeholder="Gold Value" type="number"><br><br>
+<input id="moneyInput" placeholder="Money" type="number"><br><br>
+<input id="goldInput" placeholder="Gold Value" type="number"><br><br>
 
 <button onclick="calcZakat()">Calculate</button>
-
 <h3 id="zakatResult"></h3>
 
 </div>
-
 </div>
 
 <!-- SETTINGS -->
 <div id="settingsPage" class="hidden">
-
 <div class="card">
 <h3>Mode</h3>
 <button onclick="toggleMode()">Dark / Light</button>
@@ -174,7 +168,6 @@ margin:5px;
 <p>01843860547</p>
 <p>srp-soft.ltd</p>
 </div>
-
 </div>
 
 <!-- NAV -->
@@ -189,15 +182,10 @@ margin:5px;
 
 /* Page Switch */
 function showPage(p){
-homePage.classList.add("hidden");
-ramadanPage.classList.add("hidden");
-zakatPage.classList.add("hidden");
-settingsPage.classList.add("hidden");
+["homePage","ramadanPage","zakatPage","settingsPage"]
+.forEach(id=>document.getElementById(id).classList.add("hidden"));
 
-if(p==="home") homePage.classList.remove("hidden");
-if(p==="ramadan") ramadanPage.classList.remove("hidden");
-if(p==="zakat") zakatPage.classList.remove("hidden");
-if(p==="settings") settingsPage.classList.remove("hidden");
+document.getElementById(p+"Page").classList.remove("hidden");
 }
 
 /* Mode */
@@ -207,20 +195,32 @@ document.body.classList.toggle("dark");
 
 /* Local Time */
 setInterval(()=>{
-localTime.innerText="Local Time: "+new Date().toLocaleTimeString();
+document.getElementById("localTime").innerText=
+"Local Time: "+new Date().toLocaleTimeString();
 },1000);
 
 /* Bangla Date */
 function banglaDate(){
-return new Date().toLocaleDateString("bn-BD",{year:"numeric",month:"long",day:"numeric"});
+return new Date().toLocaleDateString("bn-BD",
+{year:"numeric",month:"long",day:"numeric"});
+}
+
+/* Convert Prayer Time */
+function prayerDate(time){
+let [h,m]=time.split(":");
+let d=new Date();
+d.setHours(parseInt(h),parseInt(m),0,0);
+return d;
 }
 
 /* Load Prayer */
 async function loadPrayer(){
 
-let res=await fetch("https://api.aladhan.com/v1/timingsByCity?city=Dhaka&country=Bangladesh&method=1");
-let data=await res.json();
+let res=await fetch(
+"https://api.aladhan.com/v1/timingsByCity?city=Dhaka&country=Bangladesh&method=1"
+);
 
+let data=await res.json();
 let t=data.data.timings;
 
 fajrTime.innerText=t.Fajr;
@@ -234,11 +234,11 @@ dateText.innerText=
 " | English: "+data.data.date.gregorian.date+
 " | বাংলা: "+banglaDate();
 
-nextPrayer(t);
+startCountdown(t);
 }
 
 /* Countdown */
-function nextPrayer(t){
+function startCountdown(t){
 
 let list=[
 {name:"Fajr",time:t.Fajr,id:"pFajr"},
@@ -251,32 +251,37 @@ let list=[
 setInterval(()=>{
 
 let now=new Date();
-
-document.querySelectorAll(".prayer").forEach(e=>e.classList.remove("active"));
+let next=null;
 
 for(let p of list){
+let pt=prayerDate(p.time);
+if(pt>now){ next={...p,pt}; break; }
+}
 
-let [h,m]=p.time.split(":");
-let pt=new Date();
-pt.setHours(h,m,0);
+/* যদি সব নামাজ শেষ হয় তাহলে কালকের ফজর */
+if(!next){
+next={...list[0],pt:prayerDate(list[0].time)};
+next.pt.setDate(next.pt.getDate()+1);
+}
 
-if(pt>now){
-
-let diff=pt-now;
+let diff=next.pt-now;
 
 let hh=Math.floor(diff/3600000);
 let mm=Math.floor(diff/60000)%60;
 let ss=Math.floor(diff/1000)%60;
 
-remaining.innerText=hh+":"+mm+":"+ss;
-nextName.innerText="Next Prayer: "+p.name;
+remaining.innerText=
+String(hh).padStart(2,'0')+":"+
+String(mm).padStart(2,'0')+":"+
+String(ss).padStart(2,'0');
 
-document.getElementById(p.id).classList.add("active");
+nextName.innerText="Next Prayer: "+next.name;
 
-break;
-}
+document.querySelectorAll(".prayer")
+.forEach(e=>e.classList.remove("active"));
 
-}
+document.getElementById(next.id)
+.classList.add("active");
 
 },1000);
 
@@ -285,13 +290,16 @@ break;
 /* Zakat */
 function calcZakat(){
 
-let money=parseFloat(money.value)||0;
-let gold=parseFloat(gold.value)||0;
+let money=parseFloat(
+document.getElementById("moneyInput").value)||0;
 
-let total=money+gold;
-let zakat=total*0.025;
+let gold=parseFloat(
+document.getElementById("goldInput").value)||0;
 
-zakatResult.innerText="Zakat = "+zakat.toFixed(2);
+let zakat=(money+gold)*0.025;
+
+zakatResult.innerText=
+"Zakat = "+zakat.toFixed(2)+" ৳";
 }
 
 loadPrayer();
@@ -300,3 +308,4 @@ loadPrayer();
 
 </body>
 </html>
+
