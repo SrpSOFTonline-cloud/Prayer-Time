@@ -2,32 +2,32 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Bangladesh Prayer Time App</title>
+
+<title>Islamic Prayer App</title>
 
 <style>
 
 body{
 margin:0;
 font-family:Segoe UI;
-background:#f3f4f6;
+background:url("https://i.imgur.com/Z6a9Q7P.png");
+background-size:cover;
 transition:.3s;
 }
 
 .dark{
-background:#0f172a;
+background:#020617;
 color:white;
 }
 
+/* Header */
 .header{
 text-align:center;
-padding:15px;
+padding:18px;
 font-size:22px;
 font-weight:bold;
-background:#e5e7eb;
-}
-
-.dark .header{
-background:#1e293b;
+background:linear-gradient(45deg,#22c55e,#0ea5e9);
+color:white;
 }
 
 /* Card */
@@ -35,7 +35,7 @@ background:#1e293b;
 background:white;
 margin:12px;
 padding:15px;
-border-radius:12px;
+border-radius:15px;
 }
 
 .dark .card{
@@ -49,8 +49,8 @@ overflow:auto;
 }
 
 .prayer{
-min-width:120px;
-background:#e5e7eb;
+min-width:110px;
+background:#e2e8f0;
 margin:6px;
 border-radius:10px;
 padding:15px;
@@ -58,8 +58,8 @@ text-align:center;
 }
 
 .active{
-background:#cde4b7;
-font-weight:bold;
+background:#22c55e;
+color:white;
 }
 
 /* Bottom Nav */
@@ -70,7 +70,7 @@ width:100%;
 background:white;
 display:flex;
 justify-content:space-around;
-padding:12px;
+padding:10px;
 }
 
 .dark .bottom-nav{
@@ -81,7 +81,6 @@ button{
 padding:10px;
 border:none;
 border-radius:8px;
-margin:5px;
 cursor:pointer;
 }
 
@@ -93,9 +92,10 @@ cursor:pointer;
 <body>
 
 <div class="header">
-🕌 Bangladesh Prayer App
+🕌 Islamic Prayer App
 <p id="dateText"></p>
 <p id="localTime"></p>
+<button onclick="toggleMode()" id="modeBtn">🌙</button>
 </div>
 
 <!-- HOME -->
@@ -108,116 +108,76 @@ cursor:pointer;
 
 <div class="card prayer-row">
 
-<div class="prayer" id="pFajr">
-<p id="fajrTime"></p>Fajr
-</div>
+<div class="prayer" id="pFajr"><p id="fajrTime"></p>Fajr</div>
+<div class="prayer" id="pDhuhr"><p id="dhuhrTime"></p>Dhuhr</div>
+<div class="prayer" id="pAsr"><p id="asrTime"></p>Asr</div>
+<div class="prayer" id="pMaghrib"><p id="maghribTime"></p>Maghrib</div>
+<div class="prayer" id="pIsha"><p id="ishaTime"></p>Isha</div>
 
-<div class="prayer" id="pDhuhr">
-<p id="dhuhrTime"></p>Dhuhr
-</div>
-
-<div class="prayer" id="pAsr">
-<p id="asrTime"></p>Asr
-</div>
-
-<div class="prayer" id="pMaghrib">
-<p id="maghribTime"></p>Maghrib
-</div>
-
-<div class="prayer" id="pIsha">
-<p id="ishaTime"></p>Isha
 </div>
 
 </div>
 
+<!-- TASBIH -->
+<div id="tasbihPage" class="hidden">
+<div class="card">
+<h2>Tasbih Counter</h2>
+<h1 id="tasbihCount">0</h1>
+<button onclick="tasbih++">➕</button>
+<button onclick="tasbih=0">Reset</button>
+</div>
 </div>
 
 <!-- RAMADAN -->
 <div id="ramadanPage" class="hidden">
 <div class="card">
-<h3>Ramadan Timetable 2026</h3>
-<p>Sehri Ends: 4:45 AM</p>
-<p>Iftar: 6:05 PM</p>
-</div>
-</div>
-
-<!-- ZAKAT -->
-<div id="zakatPage" class="hidden">
-<div class="card">
-<h3>Zakat Calculator</h3>
-
-<input id="moneyInput" placeholder="Money" type="number"><br><br>
-<input id="goldInput" placeholder="Gold Value" type="number"><br><br>
-
-<button onclick="calcZakat()">Calculate</button>
-<h3 id="zakatResult"></h3>
-
-</div>
-</div>
-
-<!-- SETTINGS -->
-<div id="settingsPage" class="hidden">
-<div class="card">
-<h3>Mode</h3>
-<button onclick="toggleMode()">Dark / Light</button>
-</div>
-
-<div class="card">
-<h3>Developer</h3>
-<p>Shovon</p>
-<p>01843860547</p>
-<p>srp-soft.ltd</p>
+<h3>Ramadan Calendar 2026</h3>
+<div id="ramadanList"></div>
 </div>
 </div>
 
 <!-- NAV -->
 <div class="bottom-nav">
 <button onclick="showPage('home')">Home</button>
+<button onclick="showPage('tasbih')">Tasbih</button>
 <button onclick="showPage('ramadan')">Ramadan</button>
-<button onclick="showPage('zakat')">Zakat</button>
-<button onclick="showPage('settings')">Settings</button>
 </div>
 
 <script>
 
-/* Page Switch */
+/* PAGE */
 function showPage(p){
-["homePage","ramadanPage","zakatPage","settingsPage"]
+["homePage","tasbihPage","ramadanPage"]
 .forEach(id=>document.getElementById(id).classList.add("hidden"));
 
 document.getElementById(p+"Page").classList.remove("hidden");
 }
 
-/* Mode */
+/* DARK MODE TOGGLE */
 function toggleMode(){
 document.body.classList.toggle("dark");
+modeBtn.innerText=
+document.body.classList.contains("dark")?"☀️":"🌙";
 }
 
-/* Local Time */
+/* LOCAL TIME */
 setInterval(()=>{
-document.getElementById("localTime").innerText=
+localTime.innerText=
 "Local Time: "+new Date().toLocaleTimeString();
 },1000);
 
-/* Bangla Date */
-function banglaDate(){
-return new Date().toLocaleDateString("bn-BD",
-{year:"numeric",month:"long",day:"numeric"});
+/* AUTO GPS */
+function getLocation(){
+navigator.geolocation.getCurrentPosition(pos=>{
+loadPrayer(pos.coords.latitude,pos.coords.longitude);
+});
 }
 
-/* Convert Prayer Time */
-function prayerDate(time){
-let [h,m]=time.split(":");
-let d=new Date();
-d.setHours(parseInt(h),parseInt(m),0,0);
-return d;
-}
-
-/* Load Prayer */
-async function loadPrayer(){
+/* LOAD PRAYER */
+async function loadPrayer(lat=23.8103,lon=90.4125){
 
 let res=await fetch(
-"https://api.aladhan.com/v1/timingsByCity?city=Dhaka&country=Bangladesh&method=1"
+`https://api.aladhan.com/v1/timings?latitude=${lat}&longitude=${lon}&method=1`
 );
 
 let data=await res.json();
@@ -231,13 +191,12 @@ ishaTime.innerText=t.Isha;
 
 dateText.innerText=
 "Hijri: "+data.data.date.hijri.date+
-" | English: "+data.data.date.gregorian.date+
-" | বাংলা: "+banglaDate();
+" | English: "+data.data.date.gregorian.date;
 
 startCountdown(t);
 }
 
-/* Countdown */
+/* COUNTDOWN */
 function startCountdown(t){
 
 let list=[
@@ -254,58 +213,75 @@ let now=new Date();
 let next=null;
 
 for(let p of list){
-let pt=prayerDate(p.time);
-if(pt>now){ next={...p,pt}; break; }
+let [h,m]=p.time.split(":");
+let pt=new Date();
+pt.setHours(h,m,0);
+
+if(pt>now){
+next={...p,pt};
+break;
+}
 }
 
-/* যদি সব নামাজ শেষ হয় তাহলে কালকের ফজর */
 if(!next){
-next={...list[0],pt:prayerDate(list[0].time)};
-next.pt.setDate(next.pt.getDate()+1);
+let [h,m]=list[0].time.split(":");
+let pt=new Date();
+pt.setDate(pt.getDate()+1);
+pt.setHours(h,m,0);
+next={...list[0],pt};
 }
 
 let diff=next.pt-now;
 
-let hh=Math.floor(diff/3600000);
-let mm=Math.floor(diff/60000)%60;
-let ss=Math.floor(diff/1000)%60;
-
 remaining.innerText=
-String(hh).padStart(2,'0')+":"+
-String(mm).padStart(2,'0')+":"+
-String(ss).padStart(2,'0');
+Math.floor(diff/3600000)+":"+
+Math.floor(diff/60000)%60+":"+
+Math.floor(diff/1000)%60;
 
 nextName.innerText="Next Prayer: "+next.name;
 
 document.querySelectorAll(".prayer")
 .forEach(e=>e.classList.remove("active"));
 
-document.getElementById(next.id)
-.classList.add("active");
+document.getElementById(next.id).classList.add("active");
 
 },1000);
 
 }
 
-/* Zakat */
-function calcZakat(){
-
-let money=parseFloat(
-document.getElementById("moneyInput").value)||0;
-
-let gold=parseFloat(
-document.getElementById("goldInput").value)||0;
-
-let zakat=(money+gold)*0.025;
-
-zakatResult.innerText=
-"Zakat = "+zakat.toFixed(2)+" ৳";
+/* NOTIFICATION */
+function notifyPrayer(name){
+if(Notification.permission==="granted"){
+new Notification(name+" Prayer Time");
+}
 }
 
-loadPrayer();
+Notification.requestPermission();
+
+/* TASBIH */
+let tasbih=0;
+setInterval(()=>{
+tasbihCount.innerText=tasbih;
+},300);
+
+/* RAMADAN DEMO LIST */
+let ram="";
+for(let i=1;i<=30;i++){
+ram+=`Day ${i} - Sehri 4:45 AM | Iftar 6:05 PM<br>`;
+}
+ramadanList.innerHTML=ram;
+
+/* LANGUAGE SWITCH */
+let lang="en";
+
+function switchLang(){
+lang=lang==="en"?"bn":"en";
+alert("Demo Language Switch");
+}
+
+getLocation();
 
 </script>
 
 </body>
 </html>
-
