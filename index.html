@@ -1,45 +1,52 @@
 <!DOCTYPE html>
 <html>
 <head>
+
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Prayer Times Bangladesh</title>
 
 <style>
 
+/* ANDROID APP STYLE */
 body{
 margin:0;
 font-family:Segoe UI;
-background:#f3f4f6;
-transition:.3s;
-}
-
-.dark{
 background:#0f172a;
 color:white;
 }
 
+/* Splash */
+#splash{
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:#0f172a;
+display:flex;
+flex-direction:column;
+justify-content:center;
+align-items:center;
+z-index:9999;
+}
+
+/* Header */
 .header{
 text-align:center;
 padding:15px;
-font-size:20px;
-background:#e5e7eb;
-}
-
-.dark .header{
 background:#1e293b;
+font-size:20px;
 }
 
+/* Card */
 .card{
-background:white;
+background:#1e293b;
 margin:12px;
 padding:15px;
-border-radius:12px;
+border-radius:15px;
 }
 
-.dark .card{
-background:#1e293b;
-}
-
+/* Prayer Row */
 .prayer-row{
 display:flex;
 overflow:auto;
@@ -47,36 +54,34 @@ overflow:auto;
 
 .prayer{
 min-width:120px;
-background:#e5e7eb;
+background:#334155;
 margin:6px;
-border-radius:10px;
+border-radius:12px;
 padding:15px;
 text-align:center;
 }
 
 .active{
-background:#cde4b7;
+background:#22c55e;
 }
 
+/* Bottom Nav */
 .bottom-nav{
 position:fixed;
 bottom:0;
 width:100%;
-background:white;
+background:#1e293b;
 display:flex;
 justify-content:space-around;
-padding:10px;
-}
-
-.dark .bottom-nav{
-background:#1e293b;
+padding:12px;
 }
 
 button{
-padding:10px;
+background:#334155;
+color:white;
 border:none;
-border-radius:8px;
-margin:4px;
+padding:10px;
+border-radius:10px;
 }
 
 .hidden{display:none}
@@ -86,9 +91,15 @@ margin:4px;
 
 <body>
 
+<!-- SPLASH SCREEN -->
+<div id="splash">
+<h1>🕌 Prayer Times Bangladesh</h1>
+<p>SRP SOFT LTD</p>
+</div>
+
+<!-- HEADER -->
 <div class="header">
-🕌 Prayer Times Bangladesh
-<p id="dateText"></p>
+Prayer Times Bangladesh
 <p id="localTime"></p>
 </div>
 
@@ -109,34 +120,32 @@ margin:4px;
 <div class="prayer" id="pIsha"><p id="ishaTime"></p>Isha</div>
 
 </div>
+
 </div>
 
 <!-- TASBIH -->
 <div id="tasbihPage" class="hidden">
 <div class="card">
-<h2>Tasbih Counter</h2>
+<h2>Tasbih</h2>
 <h1 id="tasbihCount">0</h1>
-<button onclick="addTasbih()">+</button>
+<button onclick="addTasbih()">Count</button>
 <button onclick="resetTasbih()">Reset</button>
 </div>
 </div>
 
-<!-- ZAKAT -->
-<div id="zakatPage" class="hidden">
+<!-- PRIVACY POLICY -->
+<div id="privacyPage" class="hidden">
 <div class="card">
-<h2>Zakat Calculator</h2>
-<input id="money" placeholder="Money"><br><br>
-<input id="gold" placeholder="Gold Value"><br><br>
-<button onclick="calcZakat()">Calculate</button>
-<h3 id="zakatResult"></h3>
-</div>
-</div>
 
-<!-- QIBLA -->
-<div id="qiblaPage" class="hidden">
-<div class="card">
-<h2>Qibla Compass</h2>
-<p id="qiblaDir">Move Phone</p>
+<h2>Privacy Policy</h2>
+
+<p>This app collects location for prayer time & mosque finder.</p>
+<p>Notification permission used for azan alerts.</p>
+<p>We do not sell user data.</p>
+
+<p>Contact:</p>
+<p>support@srpsoft.com</p>
+
 </div>
 </div>
 
@@ -144,23 +153,13 @@ margin:4px;
 <div id="settingsPage" class="hidden">
 
 <div class="card">
-<h3>Mode</h3>
-<button onclick="toggleMode()">Dark / Light</button>
-</div>
-
-<div class="card">
-<h3>Language</h3>
-<button onclick="setLang('en')">English</button>
-<button onclick="setLang('bn')">বাংলা</button>
-</div>
-
-<div class="card">
 <h3>Developer</h3>
 <p>Shovon</p>
 <p>SRP SOFT LTD</p>
-<p>📞 +8809696060547</p>
-<p>📧 support@srpsoft.com</p>
+<p>+8809696060547</p>
 </div>
+
+<button onclick="showPage('privacy')">Privacy Policy</button>
 
 </div>
 
@@ -168,31 +167,27 @@ margin:4px;
 <div class="bottom-nav">
 <button onclick="showPage('home')">Home</button>
 <button onclick="showPage('tasbih')">Tasbih</button>
-<button onclick="showPage('zakat')">Zakat</button>
-<button onclick="showPage('qibla')">Qibla</button>
 <button onclick="showPage('settings')">Settings</button>
 </div>
 
 <script>
 
+/* SPLASH */
+setTimeout(()=>{
+splash.style.display="none";
+},2000);
+
 /* PAGE SWITCH */
 function showPage(p){
 homePage.classList.add("hidden");
 tasbihPage.classList.add("hidden");
-zakatPage.classList.add("hidden");
-qiblaPage.classList.add("hidden");
 settingsPage.classList.add("hidden");
+privacyPage.classList.add("hidden");
 
 if(p==="home") homePage.classList.remove("hidden");
 if(p==="tasbih") tasbihPage.classList.remove("hidden");
-if(p==="zakat") zakatPage.classList.remove("hidden");
-if(p==="qibla") qiblaPage.classList.remove("hidden");
 if(p==="settings") settingsPage.classList.remove("hidden");
-}
-
-/* DARK MODE */
-function toggleMode(){
-document.body.classList.toggle("dark");
+if(p==="privacy") privacyPage.classList.remove("hidden");
 }
 
 /* LOCAL TIME */
@@ -214,14 +209,10 @@ asrTime.innerText=t.Asr;
 maghribTime.innerText=t.Maghrib;
 ishaTime.innerText=t.Isha;
 
-dateText.innerText=
-"Hijri "+data.data.date.hijri.date+
-" | English "+data.data.date.gregorian.date;
-
 nextPrayer(t);
 }
 
-/* COUNTDOWN */
+/* NEXT PRAYER */
 function nextPrayer(t){
 
 let list=[
@@ -236,9 +227,6 @@ setInterval(()=>{
 
 let now=new Date();
 
-document.querySelectorAll(".prayer")
-.forEach(e=>e.classList.remove("active"));
-
 for(let p of list){
 
 let [h,m]=p.time.split(":");
@@ -249,29 +237,23 @@ if(pt>now){
 
 let diff=pt-now;
 
-let hh=Math.floor(diff/3600000);
-let mm=Math.floor(diff/60000)%60;
-let ss=Math.floor(diff/1000)%60;
+remaining.innerText=
+Math.floor(diff/3600000)+":"+
+Math.floor(diff/60000)%60+":"+
+Math.floor(diff/1000)%60;
 
-remaining.innerText=hh+":"+mm+":"+ss;
 nextName.innerText="Next Prayer "+p.name;
-
-document.getElementById(p.id).classList.add("active");
 
 break;
 }
+
 }
 
 },1000);
+
 }
 
-/* ZAKAT */
-function calcZakat(){
-let total=(+money.value||0)+(+gold.value||0);
-zakatResult.innerText="Zakat = "+(total*0.025).toFixed(2);
-}
-
-/* TASBIH */
+/* TASBIH SAVE */
 let count=localStorage.getItem("tasbih")||0;
 tasbihCount.innerText=count;
 
@@ -283,20 +265,8 @@ localStorage.setItem("tasbih",count);
 
 function resetTasbih(){
 count=0;
-tasbihCount.innerText=count;
-localStorage.setItem("tasbih",count);
-}
-
-/* SIMPLE QIBLA */
-if(window.DeviceOrientationEvent){
-window.addEventListener("deviceorientation",e=>{
-qiblaDir.innerText="Direction: "+Math.round(e.alpha);
-});
-}
-
-/* LANGUAGE */
-function setLang(l){
-alert("Demo Language Switch "+l);
+tasbihCount.innerText=0;
+localStorage.setItem("tasbih",0);
 }
 
 loadPrayer();
